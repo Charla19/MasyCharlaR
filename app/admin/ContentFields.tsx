@@ -22,7 +22,7 @@ export function ContentFields({ entry }: { entry?: EntryValues }) {
     {has("EXPERIENCE", "COMMUNITY", "AWARD", "SKILL", "TALK", "INTEREST") && <label>{kind === "SKILL" ? "Outils / spécialités" : kind === "INTEREST" ? "Mots-clés" : "Technologies / tags"}<input name="tags" defaultValue={entry?.tags ?? ""} placeholder="React · Python · Cloud" /></label>}
     {has("EXPERIENCE", "AWARD") && <label>{kind === "AWARD" ? "Distinction / résultat" : "Chiffre clé / résultat"}<input name="metric" defaultValue={entry?.metric ?? ""} /></label>}
     {has("EXPERIENCE", "COMMUNITY", "AWARD", "TALK") && <label>Lien public<input name="href" type="url" defaultValue={entry?.href ?? ""} /></label>}
-    <label>Ordre d’affichage<input name="position" type="number" defaultValue={entry?.position ?? 0} /></label>
+    <label>Ordre dans cette catégorie (1 = premier)<input name="position" type="number" min={1} defaultValue={entry?.position ?? 1} /></label>
     {has("EXPERIENCE", "AWARD", "TALK") && <label className="check"><input name="featured" type="checkbox" defaultChecked={entry?.featured ?? false} /> Mettre en avant</label>}
     <label className="check"><input name="published" type="checkbox" defaultChecked={entry?.published ?? false} /> Publier</label>
   </>;

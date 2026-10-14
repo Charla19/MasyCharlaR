@@ -5,7 +5,38 @@ import { redirect } from "next/navigation";
 import { cookieName, signAdminSession, validAdminCredentials } from "../../lib/auth";
 import { prisma } from "../../lib/db";
 import { verifyAdminSession } from "../../lib/auth";
-import { PortfolioKind } from "@prisma/client";
+import { PortfolioKind, Prisma } from "@prisma/client";
+
+const temporaryPosition = 2_147_483_647;
+
+function displayPosition(value: FormDataEntryValue | null) {
+  const position = Number(value);
+  return Number.isInteger(position) && position > 0 ? position : 1;
+}
+
+async function placeProject(tx: Prisma.TransactionClient, id: string, position: number) {
+  const rows = await tx.project.findMany({ orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }], select: { id: true } });
+  const ids = rows.filter(row => row.id !== id).map(row => row.id);
+  ids.splice(Math.min(position - 1, ids.length), 0, id);
+  for (const [index, projectId] of ids.entries()) await tx.project.update({ where: { id: projectId }, data: { position: index + 1 } });
+}
+
+async function normalizeProjects(tx: Prisma.TransactionClient) {
+  const rows = await tx.project.findMany({ orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }], select: { id: true } });
+  for (const [index, row] of rows.entries()) await tx.project.update({ where: { id: row.id }, data: { position: index + 1 } });
+}
+
+async function placePortfolioEntry(tx: Prisma.TransactionClient, kind: PortfolioKind, id: string, position: number) {
+  const rows = await tx.portfolioEntry.findMany({ where: { kind }, orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }], select: { id: true } });
+  const ids = rows.filter(row => row.id !== id).map(row => row.id);
+  ids.splice(Math.min(position - 1, ids.length), 0, id);
+  for (const [index, entryId] of ids.entries()) await tx.portfolioEntry.update({ where: { id: entryId }, data: { position: index + 1 } });
+}
+
+async function normalizePortfolioKind(tx: Prisma.TransactionClient, kind: PortfolioKind) {
+  const rows = await tx.portfolioEntry.findMany({ where: { kind }, orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }], select: { id: true } });
+  for (const [index, row] of rows.entries()) await tx.portfolioEntry.update({ where: { id: row.id }, data: { position: index + 1 } });
+}
 
 async function requireAdmin() {
   const token = (await cookies()).get(cookieName)?.value;
@@ -29,15 +60,18 @@ export async function createProject(formData: FormData) {
   const summary = String(formData.get("summary") || "").trim();
   const stack = String(formData.get("stack") || "").trim();
   if (!title || !summary || !stack) redirect("/admin?error=required");
-  const position = Number(formData.get("position") || 0);
-  await prisma.project.create({ data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: Number.isInteger(position) ? position : 0 } });
+  const position = displayPosition(formData.get("position"));
+  await prisma.$transaction(async tx => {
+    const project = await tx.project.create({ data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
+    await placeProject(tx, project.id, position);
+  });
   redirect("/admin");
 }
 
 export async function deleteProject(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") || "");
-  if (id) await prisma.project.delete({ where: { id } });
+  if (id) await prisma.$transaction(async tx => { await tx.project.delete({ where: { id } }); await normalizeProjects(tx); });
   redirect("/admin");
 }
 
@@ -48,8 +82,11 @@ export async function updateProject(formData: FormData) {
   const summary = String(formData.get("summary") || "").trim();
   const stack = String(formData.get("stack") || "").trim();
   if (!id || !title || !summary || !stack) redirect("/admin?error=required");
-  const position = Number(formData.get("position") || 0);
-  await prisma.project.update({ where: { id }, data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: Number.isInteger(position) ? position : 0 } });
+  const position = displayPosition(formData.get("position"));
+  await prisma.$transaction(async tx => {
+    await tx.project.update({ where: { id }, data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
+    await placeProject(tx, id, position);
+  });
   redirect("/admin");
 }
 
@@ -59,13 +96,17 @@ function portfolioData(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
   if (!title || !description) redirect("/admin?error=required");
-  const position = Number(formData.get("position") || 0);
-  return { kind, title, description, subtitle: String(formData.get("subtitle") || "").trim() || null, organization: String(formData.get("organization") || "").trim() || null, period: String(formData.get("period") || "").trim() || null, location: String(formData.get("location") || "").trim() || null, tags: String(formData.get("tags") || "").trim() || null, metric: String(formData.get("metric") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: Number.isInteger(position) ? position : 0 };
+  const position = displayPosition(formData.get("position"));
+  return { kind, title, description, subtitle: String(formData.get("subtitle") || "").trim() || null, organization: String(formData.get("organization") || "").trim() || null, period: String(formData.get("period") || "").trim() || null, tags: String(formData.get("tags") || "").trim() || null, location: String(formData.get("location") || "").trim() || null, metric: String(formData.get("metric") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position };
 }
 
 export async function createPortfolioEntry(formData: FormData) {
   await requireAdmin();
-  await prisma.portfolioEntry.create({ data: portfolioData(formData) });
+  const data = portfolioData(formData);
+  await prisma.$transaction(async tx => {
+    const entry = await tx.portfolioEntry.create({ data: { ...data, position: temporaryPosition } });
+    await placePortfolioEntry(tx, data.kind, entry.id, data.position);
+  });
   redirect("/admin");
 }
 
@@ -73,13 +114,22 @@ export async function updatePortfolioEntry(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") || "");
   if (!id) redirect("/admin?error=required");
-  await prisma.portfolioEntry.update({ where: { id }, data: portfolioData(formData) });
+  const data = portfolioData(formData);
+  await prisma.$transaction(async tx => {
+    const current = await tx.portfolioEntry.findUniqueOrThrow({ where: { id }, select: { kind: true } });
+    await tx.portfolioEntry.update({ where: { id }, data: { ...data, position: temporaryPosition } });
+    if (current.kind !== data.kind) await normalizePortfolioKind(tx, current.kind);
+    await placePortfolioEntry(tx, data.kind, id, data.position);
+  });
   redirect("/admin");
 }
 
 export async function deletePortfolioEntry(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") || "");
-  if (id) await prisma.portfolioEntry.delete({ where: { id } });
+  if (id) await prisma.$transaction(async tx => {
+    const current = await tx.portfolioEntry.findUnique({ where: { id }, select: { kind: true } });
+    if (current) { await tx.portfolioEntry.delete({ where: { id } }); await normalizePortfolioKind(tx, current.kind); }
+  });
   redirect("/admin");
 }
