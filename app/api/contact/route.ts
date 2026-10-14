@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Resend } from "resend";
+import { consumeRateLimit } from "../../../lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -11,28 +12,6 @@ const contactSchema = z.object({
   message: z.string().trim().min(10).max(5000),
   website: z.string().max(0).optional(),
 });
-
-const attempts = new Map<string, { count: number; resetAt: number }>();
-const windowMs = 10 * 60 * 1000;
-const maxAttempts = 3;
-
-function isRateLimited(ip: string) {
-  const now = Date.now();
-  if (attempts.size > 5000) {
-    for (const [key, entry] of attempts) {
-      if (entry.resetAt <= now) attempts.delete(key);
-    }
-    while (attempts.size > 5000) attempts.delete(attempts.keys().next().value!);
-  }
-  const current = attempts.get(ip);
-  if (!current || current.resetAt <= now) {
-    attempts.set(ip, { count: 1, resetAt: now + windowMs });
-    return false;
-  }
-  if (current.count >= maxAttempts) return true;
-  current.count += 1;
-  return false;
-}
 
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
@@ -45,7 +24,27 @@ export async function POST(request: Request) {
 
   let input: unknown;
   try {
-    input = await request.json();
+    const reader = request.body?.getReader();
+    if (!reader) return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 12_000) {
+        await reader.cancel();
+        return NextResponse.json({ error: "Message trop volumineux." }, { status: 413 });
+      }
+      chunks.push(value);
+    }
+    const body = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      body.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    input = JSON.parse(new TextDecoder().decode(body));
   } catch {
     return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
@@ -56,8 +55,14 @@ export async function POST(request: Request) {
   const { name, replyTo, subject, message, website } = parsed.data;
   if (website) return NextResponse.json({ success: true });
 
-  const ip = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (isRateLimited(ip)) {
+  const ip = request.headers.get("x-real-ip")?.trim() || "unknown";
+  let rateLimitAllowed = false;
+  try {
+    rateLimitAllowed = (await consumeRateLimit("contact-form", ip, 3, 10 * 60)).allowed;
+  } catch {
+    return NextResponse.json({ error: "L’envoi est momentanément indisponible. Réessaie plus tard." }, { status: 503 });
+  }
+  if (!rateLimitAllowed) {
     return NextResponse.json({ error: "Trop de messages envoyés. Réessaie dans quelques minutes." }, { status: 429 });
   }
 

@@ -1,10 +1,11 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cookieName, signAdminSession, validAdminCredentials } from "../../lib/auth";
 import { prisma } from "../../lib/db";
 import { verifyAdminSession } from "../../lib/auth";
+import { clearRateLimit, consumeRateLimit } from "../../lib/rate-limit";
 import { PortfolioKind, Prisma } from "@prisma/client";
 
 const temporaryPosition = 2_147_483_647;
@@ -46,7 +47,19 @@ async function requireAdmin() {
 export async function login(formData: FormData) {
   const email = String(formData.get("email") || "");
   const password = String(formData.get("password") || "");
-  if (!await validAdminCredentials(email, password)) redirect("/admin?error=invalid");
+  const clientIp = (await headers()).get("x-real-ip")?.trim() || "unknown";
+  let rateLimitAllowed = false;
+  try {
+    rateLimitAllowed = (await consumeRateLimit("admin-login", clientIp, 10, 15 * 60)).allowed;
+  } catch {
+    redirect("/admin?error=invalid");
+  }
+  if (!rateLimitAllowed || !await validAdminCredentials(email, password)) redirect("/admin?error=invalid");
+  try {
+    await clearRateLimit("admin-login", clientIp);
+  } catch {
+    redirect("/admin?error=invalid");
+  }
   const jar = await cookies();
   jar.set(cookieName, await signAdminSession(), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge: 60 * 60 * 8, path: "/" });
   redirect("/admin");

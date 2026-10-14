@@ -8,17 +8,17 @@ datasource db {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  summary     String
-  stack       String
-  outcome     String?
-  href        String?
-  featured    Boolean  @default(false)
-  published   Boolean  @default(false)
-  position    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  title     String
+  summary   String
+  stack     String
+  outcome   String?
+  href      String?
+  featured  Boolean  @default(false)
+  published Boolean  @default(false)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PortfolioKind {
@@ -51,4 +51,13 @@ model PortfolioEntry {
 
   @@unique([kind, title])
   @@index([kind, published, position])
+}
+
+model RateLimitBucket {
+  id              String   @id
+  count           Int      @default(0)
+  windowStartedAt DateTime @db.Timestamptz(3)
+  expiresAt       DateTime @db.Timestamptz(3)
+
+  @@index([expiresAt])
 }
