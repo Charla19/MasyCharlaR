@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  summary     String
+  stack       String
+  outcome     String?
+  href        String?
+  featured    Boolean  @default(false)
+  published   Boolean  @default(false)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum PortfolioKind {
+  EXPERIENCE
+  COMMUNITY
+  AWARD
+  EDUCATION
+  SKILL
+  TALK
+  INTEREST
+}
+
+model PortfolioEntry {
+  id           String        @id @default(cuid())
+  kind         PortfolioKind
+  title        String
+  subtitle     String?
+  description  String        @db.Text
+  organization String?
+  period       String?
+  location     String?
+  tags         String?
+  metric       String?
+  href         String?
+  published    Boolean       @default(false)
+  featured     Boolean       @default(false)
+  position     Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([kind, title])
+  @@index([kind, published, position])
+}
