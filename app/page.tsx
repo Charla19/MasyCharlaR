@@ -107,8 +107,10 @@ function HeroObject({ progress, reduceMotion }: { progress: ReturnType<typeof us
 
 function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [sendState, setSendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   useEffect(() => {
     if (!open) return;
+    setSendState("idle");
     const previous = document.activeElement as HTMLElement | null;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -128,15 +130,24 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
     <motion.div ref={dialogRef} className="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-title" initial={{ opacity: 0, y: 24, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 14, scale: .99 }} transition={{ duration: .28 }}>
       <button className="dialog-close" type="button" onClick={onClose} aria-label="Fermer la fenêtre"><X /></button>
       <p className="eyebrow">Un projet, une idée, une conversation</p><h2 id="contact-title">Parlons de la <i>suite.</i></h2>
-      <form onSubmit={event => {
+      <form onSubmit={async event => {
         event.preventDefault();
-        const form = new FormData(event.currentTarget);
-        const subject = encodeURIComponent(`Portfolio — ${String(form.get("subject"))}`);
-        const body = encodeURIComponent(`Bonjour Charla,\n\n${String(form.get("message"))}\n\n${String(form.get("name"))} · ${String(form.get("replyTo"))}`);
-        window.location.href = `mailto:masycharlar@gmail.com?subject=${subject}&body=${body}`;
+        if (sendState === "sending") return;
+        const form = event.currentTarget;
+        const values = Object.fromEntries(new FormData(form).entries());
+        setSendState("sending");
+        try {
+          const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
+          if (!response.ok) throw new Error("Contact submission failed");
+          form.reset();
+          setSendState("sent");
+        } catch {
+          setSendState("error");
+        }
       }}>
+        <div className="contact-honeypot" aria-hidden="true"><label>Ne pas remplir<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
         <label>Votre nom<input name="name" autoComplete="name" required /></label><label>Votre e-mail<input name="replyTo" type="email" autoComplete="email" required /></label><label>Le sujet<input name="subject" required /></label><label>Votre message<textarea name="message" rows={4} required /></label>
-        <div className="dialog-actions"><button type="submit">Préparer le message <ArrowUpRight size={16} /></button><span>Votre application e-mail s’ouvrira pour l’envoi.</span></div>
+        <div className="dialog-actions"><button type="submit" disabled={sendState === "sending" || sendState === "sent"}>{sendState === "sending" ? "Envoi en cours…" : sendState === "sent" ? "Message envoyé" : "Envoyer le message"} <ArrowUpRight size={16} /></button><span aria-live="polite">{sendState === "sent" ? "Merci, votre message est bien envoyé." : sendState === "error" ? "L’envoi a échoué. Réessaie dans un instant." : "Votre message sera envoyé directement à Charla."}</span></div>
       </form>
     </motion.div>
   </motion.div>}</AnimatePresence>;

@@ -38,6 +38,7 @@ La base locale est publiée uniquement sur `127.0.0.1:5433` pour éviter les con
 
 - **Local** : PostgreSQL tourne via Docker Compose.
 - **Production Vercel** : créez une base Postgres managée (Neon ou Supabase, par exemple), puis ajoutez `DATABASE_URL`, `AUTH_SECRET`, `ADMIN_EMAIL` et `ADMIN_PASSWORD_HASH_B64` dans les variables d’environnement Vercel.
+- **Formulaire de contact** : vérifiez un domaine d’envoi dans Resend, puis ajoutez `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` et `CONTACT_TO_EMAIL` dans Vercel. La clé Resend doit être limitée à l’envoi et au domaine vérifié. Exemple d’expéditeur : `M.Charla.R. <contact@mail.charlamasy.site>`.
 - Exécutez `npx prisma migrate deploy` pendant le déploiement (ou dans votre CI) avant d’activer la gestion de contenus.
 
 Docker sert au développement local uniquement : Vercel héberge l’application Next.js, pas le conteneur Postgres.
