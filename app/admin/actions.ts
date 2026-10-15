@@ -75,7 +75,7 @@ export async function createProject(formData: FormData) {
   if (!title || !summary || !stack) redirect("/admin?error=required");
   const position = displayPosition(formData.get("position"));
   await prisma.$transaction(async tx => {
-    const project = await tx.project.create({ data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
+    const project = await tx.project.create({ data: { title, titleEn: String(formData.get("titleEn") || "").trim() || null, summary, summaryEn: String(formData.get("summaryEn") || "").trim() || null, stack, outcome: String(formData.get("outcome") || "").trim() || null, outcomeEn: String(formData.get("outcomeEn") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
     await placeProject(tx, project.id, position);
   });
   redirect("/admin");
@@ -97,7 +97,7 @@ export async function updateProject(formData: FormData) {
   if (!id || !title || !summary || !stack) redirect("/admin?error=required");
   const position = displayPosition(formData.get("position"));
   await prisma.$transaction(async tx => {
-    await tx.project.update({ where: { id }, data: { title, summary, stack, outcome: String(formData.get("outcome") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
+    await tx.project.update({ where: { id }, data: { title, titleEn: String(formData.get("titleEn") || "").trim() || null, summary, summaryEn: String(formData.get("summaryEn") || "").trim() || null, stack, outcome: String(formData.get("outcome") || "").trim() || null, outcomeEn: String(formData.get("outcomeEn") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position: temporaryPosition } });
     await placeProject(tx, id, position);
   });
   redirect("/admin");
@@ -110,7 +110,7 @@ function portfolioData(formData: FormData) {
   const description = String(formData.get("description") || "").trim();
   if (!title || !description) redirect("/admin?error=required");
   const position = displayPosition(formData.get("position"));
-  return { kind, title, description, subtitle: String(formData.get("subtitle") || "").trim() || null, organization: String(formData.get("organization") || "").trim() || null, period: String(formData.get("period") || "").trim() || null, tags: String(formData.get("tags") || "").trim() || null, location: String(formData.get("location") || "").trim() || null, metric: String(formData.get("metric") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position };
+  return { kind, title, titleEn: String(formData.get("titleEn") || "").trim() || null, description, descriptionEn: String(formData.get("descriptionEn") || "").trim() || null, subtitle: String(formData.get("subtitle") || "").trim() || null, subtitleEn: String(formData.get("subtitleEn") || "").trim() || null, organization: String(formData.get("organization") || "").trim() || null, period: String(formData.get("period") || "").trim() || null, tags: String(formData.get("tags") || "").trim() || null, tagsEn: String(formData.get("tagsEn") || "").trim() || null, location: String(formData.get("location") || "").trim() || null, metric: String(formData.get("metric") || "").trim() || null, metricEn: String(formData.get("metricEn") || "").trim() || null, href: String(formData.get("href") || "").trim() || null, featured: formData.get("featured") === "on", published: formData.get("published") === "on", position };
 }
 
 export async function createPortfolioEntry(formData: FormData) {

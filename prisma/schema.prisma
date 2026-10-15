@@ -10,9 +10,12 @@ datasource db {
 model Project {
   id        String   @id @default(cuid())
   title     String
+  titleEn   String?
   summary   String
+  summaryEn String?  @db.Text
   stack     String
   outcome   String?
+  outcomeEn String?
   href      String?
   featured  Boolean  @default(false)
   published Boolean  @default(false)
@@ -35,13 +38,18 @@ model PortfolioEntry {
   id           String        @id @default(cuid())
   kind         PortfolioKind
   title        String
+  titleEn      String?
   subtitle     String?
+  subtitleEn   String?
   description  String        @db.Text
+  descriptionEn String?      @db.Text
   organization String?
   period       String?
   location     String?
   tags         String?
+  tagsEn       String?
   metric       String?
+  metricEn     String?
   href         String?
   published    Boolean       @default(false)
   featured     Boolean       @default(false)
