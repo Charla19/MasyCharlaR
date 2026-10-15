@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowDownRight, ArrowUp, ArrowUpRight, Award, BookOpenText, Cloud, Code2, Database, Gamepad2, Layers3, Linkedin, Menu, Mic2, Music2, Pencil, PenLine, UsersRound, X } from "lucide-react";
+import { ArrowDownRight, ArrowUp, ArrowUpRight, Award, BookOpenText, Cloud, Code2, Database, Gamepad2, Github, Layers3, Linkedin, Menu, Mic2, Music2, Pencil, PenLine, UsersRound, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 type Language = "fr" | "en";
@@ -444,7 +444,7 @@ export default function Home() {
         <motion.p className="human-note" {...reveal}>{t("humanNote")}</motion.p>
       </section>
 
-      <footer><p>{t("footerPrompt")}</p><button className="footer-contact" type="button" onClick={() => setContactOpen(true)}>masycharlar@gmail.com <ArrowUpRight size={18} /></button><div><a aria-label={t("linkedin")} href="https://www.linkedin.com/in/charla-masy-r/" target="_blank" rel="noreferrer"><Linkedin size={18} /></a><span>© {new Date().getFullYear()} M.Charla.R. · Antananarivo</span></div></footer>
+      <footer><p>{t("footerPrompt")}</p><button className="footer-contact" type="button" onClick={() => setContactOpen(true)}>masycharlar@gmail.com <ArrowUpRight size={18} /></button><div><a aria-label={t("linkedin")} href="https://www.linkedin.com/in/charla-masy-r/" target="_blank" rel="noreferrer"><Linkedin size={18} /></a><a aria-label="GitHub" href="https://github.com/Charla19" target="_blank" rel="noreferrer"><Github size={18} /></a><span>© {new Date().getFullYear()} M.Charla.R. · Antananarivo</span></div></footer>
       <BackToTop language={language} />
       <ContactDialog open={contactOpen} onClose={() => setContactOpen(false)} language={language} />
     </main>
