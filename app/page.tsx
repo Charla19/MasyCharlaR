@@ -168,6 +168,51 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
   </motion.div>}</AnimatePresence>;
 }
 
+function BackToTop() {
+  const [lightBackdrop, setLightBackdrop] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const updateColor = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const button = document.querySelector<HTMLElement>(".back-to-top");
+        if (!button) return;
+        const bounds = button.getBoundingClientRect();
+        const underButton = document.elementsFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2)
+          .find(element => !element.closest(".back-to-top, .cursor-orbit"));
+
+        let element: Element | null = underButton ?? null;
+        let usePlum = false;
+        while (element) {
+          const channels = getComputedStyle(element).backgroundColor.match(/[\d.]+/g)?.map(Number);
+          if (channels && channels.length >= 3 && (channels[3] ?? 1) > 0.05) {
+            const linear = channels.slice(0, 3).map(channel => {
+              const value = channel / 255;
+              return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+            });
+            usePlum = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722 > 0.48;
+            break;
+          }
+          element = element.parentElement;
+        }
+        setLightBackdrop(current => current === usePlum ? current : usePlum);
+      });
+    };
+
+    updateColor();
+    window.addEventListener("scroll", updateColor, { passive: true });
+    window.addEventListener("resize", updateColor);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateColor);
+      window.removeEventListener("resize", updateColor);
+    };
+  }, []);
+
+  return <a className={`back-to-top${lightBackdrop ? " is-plum" : ""}`} href="#top" aria-label="Remonter en haut de page"><ArrowUp size={17} /></a>;
+}
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
@@ -332,7 +377,7 @@ export default function Home() {
       </section>
 
       <footer><p>On construit la suite ?</p><button className="footer-contact" type="button" onClick={() => setContactOpen(true)}>masycharlar@gmail.com <ArrowUpRight size={18} /></button><div><a aria-label="LinkedIn de MASY Charla R." href="https://www.linkedin.com/in/charla-masy-r/" target="_blank" rel="noreferrer"><Linkedin size={18} /></a><span>© {new Date().getFullYear()} M.Charla.R. · Antananarivo</span></div></footer>
-      <a className="back-to-top" href="#top" aria-label="Remonter en haut de page"><ArrowUp size={17} /></a>
+      <BackToTop />
       <ContactDialog open={contactOpen} onClose={() => setContactOpen(false)} />
     </main>
   );
