@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./styles.css";
 
 export const metadata: Metadata = {
@@ -8,6 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const nonce = (await headers()).get("x-nonce");
-  return <html lang="fr"><body nonce={nonce ?? undefined}>{children}</body></html>;
+  const [cookieStore, requestHeaders] = await Promise.all([cookies(), headers()]);
+  const nonce = requestHeaders.get("x-nonce");
+  const savedLanguage = cookieStore.get("portfolio-language")?.value;
+  const browserLanguage = requestHeaders.get("accept-language")?.split(",")[0]?.toLowerCase() ?? "";
+  const language = savedLanguage === "fr" || savedLanguage === "en" ? savedLanguage : browserLanguage.startsWith("fr") ? "fr" : "en";
+  return <html lang={language}><body nonce={nonce ?? undefined}>{children}</body></html>;
 }
