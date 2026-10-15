@@ -107,10 +107,14 @@ function HeroObject({ progress, reduceMotion }: { progress: ReturnType<typeof us
 
 function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [sendState, setSendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [sendState, setSendState] = useState<"idle" | "sending" | "verify" | "sent" | "error">("idle");
+  const [verificationId, setVerificationId] = useState("");
+  const [formError, setFormError] = useState("");
   useEffect(() => {
     if (!open) return;
     setSendState("idle");
+    setVerificationId("");
+    setFormError("");
     const previous = document.activeElement as HTMLElement | null;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -123,7 +127,7 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
     };
     document.body.classList.add("dialog-open");
     window.addEventListener("keydown", onKey);
-    dialogRef.current?.querySelector<HTMLElement>("input")?.focus();
+    dialogRef.current?.querySelector<HTMLElement>('input[name="name"]')?.focus();
     return () => { document.body.classList.remove("dialog-open"); window.removeEventListener("keydown", onKey); previous?.focus(); };
   }, [open, onClose]);
   return <AnimatePresence>{open && <motion.div className="contact-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
@@ -132,22 +136,33 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
       <p className="eyebrow">Un projet, une idée, une conversation</p><h2 id="contact-title">Parlons de la <i>suite.</i></h2>
       <form onSubmit={async event => {
         event.preventDefault();
-        if (sendState === "sending") return;
+        if (sendState === "sending" || sendState === "sent") return;
         const form = event.currentTarget;
         const values = Object.fromEntries(new FormData(form).entries());
+        if (verificationId) values.verificationId = verificationId;
+        setFormError("");
         setSendState("sending");
         try {
           const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
-          if (!response.ok) throw new Error("Contact submission failed");
-          form.reset();
-          setSendState("sent");
-        } catch {
+          const result = await response.json() as { error?: string; verificationRequired?: boolean; verificationId?: string };
+          if (!response.ok) throw new Error(result.error || "L’envoi a échoué. Réessaie dans un instant.");
+          if (result.verificationRequired && result.verificationId) {
+            setVerificationId(result.verificationId);
+            setSendState("verify");
+          } else {
+            form.reset();
+            setVerificationId("");
+            setSendState("sent");
+          }
+        } catch (error) {
+          setFormError(error instanceof Error ? error.message : "L’envoi a échoué. Réessaie dans un instant.");
           setSendState("error");
         }
       }}>
         <div className="contact-honeypot" aria-hidden="true"><label>Ne pas remplir<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
         <label>Votre nom<input name="name" autoComplete="name" required /></label><label>Votre e-mail<input name="replyTo" type="email" autoComplete="email" required /></label><label>Le sujet<input name="subject" required /></label><label>Votre message<textarea name="message" rows={4} required /></label>
-        <div className="dialog-actions"><button type="submit" disabled={sendState === "sending" || sendState === "sent"}>{sendState === "sending" ? "Envoi en cours…" : sendState === "sent" ? "Message envoyé" : "Envoyer le message"} <ArrowUpRight size={16} /></button><span aria-live="polite">{sendState === "sent" ? "Merci, votre message est bien envoyé." : sendState === "error" ? "L’envoi a échoué. Réessaie dans un instant." : "Votre message sera envoyé directement à Charla."}</span></div>
+        {verificationId && <label>Code reçu par e-mail<input name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{4}" minLength={4} maxLength={4} required aria-describedby="contact-verification-note" /><small id="contact-verification-note">Saisis le code à 4 chiffres envoyé à l’adresse indiquée. Il expire dans 10 minutes.</small></label>}
+        <div className="dialog-actions"><button type="submit" disabled={sendState === "sending" || sendState === "sent"}>{sendState === "sending" ? "Vérification…" : sendState === "sent" ? "Message envoyé" : verificationId ? "Confirmer et envoyer" : "Continuer"} <ArrowUpRight size={16} /></button><span aria-live="polite">{sendState === "sent" ? "Adresse confirmée, message envoyé à Charla. Merci !" : sendState === "verify" ? "Un code vient d’être envoyé. Consulte aussi tes courriers indésirables." : sendState === "error" ? formError : "Nous vérifierons votre adresse avant de transmettre le message."}</span></div>
       </form>
     </motion.div>
   </motion.div>}</AnimatePresence>;
@@ -162,9 +177,11 @@ export default function Home() {
   const [communityItems, setCommunityItems] = useState(communities);
   const [awardItems, setAwardItems] = useState(distinctions);
   const [talkItems, setTalkItems] = useState<string[]>([]);
+  const [showAllTalks, setShowAllTalks] = useState(false);
   const [skillItems, setSkillItems] = useState(skills);
   const [educationItems, setEducationItems] = useState([{ title: "Licence en informatique — Intégration & Développement", organization: "ESTI", period: "2021—2024" }]);
   const [interestItems, setInterestItems] = useState(defaultInterests);
+  const [heroNavVisible, setHeroNavVisible] = useState(true);
   const [wide, setWide] = useState(false);
   const [railDistance, setRailDistance] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
@@ -201,6 +218,22 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const updateVisibility = () => {
+      const hero = heroRef.current;
+      if (!hero) return;
+      const visible = window.scrollY < 1 || hero.getBoundingClientRect().bottom > window.innerHeight + 2;
+      setHeroNavVisible(current => current === visible ? current : visible);
+    };
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    window.addEventListener("resize", updateVisibility);
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
     const measure = () => {
       setWide(window.innerWidth >= 900);
       if (trackRef.current) setRailDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
@@ -217,7 +250,7 @@ export default function Home() {
       <motion.div className="reading-progress" style={{ scaleX: progress }} />
       <Cursor />
       <div className="ambient-grid" aria-hidden="true" />
-      <header className="topbar">
+      <header className={`topbar${heroNavVisible ? "" : " is-away"}`} aria-hidden={!heroNavVisible} inert={!heroNavVisible}>
         <a className="brand" href="#top" aria-label="Retour en haut">M<span>.</span>Charla<span>.</span>R.</a>
         <nav className="desktop-nav" aria-label="Navigation principale"><a href="#parcours">Parcours</a><a href="#projets">Projets</a><a href="#communaute">Communauté</a><a href="#distinctions">Repères</a></nav>
         <button className="contact-link" type="button" onClick={() => setContactOpen(true)}>Me contacter <ArrowUpRight size={16} /></button>
@@ -226,7 +259,7 @@ export default function Home() {
 
       <AnimatePresence>{menuOpen && <motion.div className="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <button aria-label="Fermer le menu" onClick={() => setMenuOpen(false)}><X /></button>
-        <a onClick={() => setMenuOpen(false)} href="#parcours">Parcours</a><a onClick={() => setMenuOpen(false)} href="#projets">Projets</a><a onClick={() => setMenuOpen(false)} href="#communaute">Communauté</a><a onClick={() => setMenuOpen(false)} href="mailto:masycharlar@gmail.com">Écrire un message</a>
+        <a onClick={() => setMenuOpen(false)} href="#parcours">Parcours</a><a onClick={() => setMenuOpen(false)} href="#projets">Projets</a><a onClick={() => setMenuOpen(false)} href="#communaute">Communauté</a><button className="mobile-contact-link" type="button" onClick={() => { setMenuOpen(false); setContactOpen(true); }}>Écrire un message <ArrowUpRight size={20} /></button>
       </motion.div>}</AnimatePresence>
 
       <section id="top" className="hero" ref={heroRef}>
@@ -277,7 +310,7 @@ export default function Home() {
       <section id="communaute" className="community-section">
         <motion.div className="community-heading" {...reveal}><p className="eyebrow">04 — Partager, transmettre, faire grandir</p><h2>La tech devient plus forte quand elle est <i>collective.</i></h2></motion.div>
         <div className="community-grid">{communityItems.map((item, index) => <motion.article className="community-card" data-cursor="community" key={item.name} {...reveal} transition={{ duration: .6, delay: index * .06 }}><span className="community-number">{String(index + 1).padStart(2, "0")}</span><div><p className="work-meta">{item.meta}</p><h3>{item.name}</h3><p>{item.copy}</p></div><ArrowUpRight size={18} aria-hidden="true" /></motion.article>)}</div>
-        <motion.div className="talk-strip" data-cursor="talk" {...reveal}><p className="eyebrow">Au micro & à l’atelier</p><div className="talk-items">{(talkItems.length ? talkItems.slice(0, 4) : ["IA responsable · Google I/O Extended 2024", "Automatisation avec n8n · Women Techmakers 2025", "Cloud pratique · GDG Get Certified 2025", "Découverte de la tech · DevFest 2025"]).map(talk => <span key={talk}>{talk}</span>)}</div><span>Google I/O Extended · DevFest · WTM · GDG</span></motion.div>
+        <motion.div className="talk-strip" data-cursor="talk" {...reveal}><p className="eyebrow">Au micro & à l’atelier</p><div className="talk-content"><div className="talk-items">{(talkItems.length ? (showAllTalks ? talkItems : talkItems.slice(0, 6)) : ["IA responsable · Google I/O Extended 2024", "Automatisation avec n8n · Women Techmakers 2025", "Cloud pratique · GDG Get Certified 2025", "Découverte de la tech · DevFest 2025"]).map((talk, index) => <span key={`${talk}-${index}`}>{talk}</span>)}</div>{talkItems.length > 6 && <button className="talk-more" type="button" aria-expanded={showAllTalks} onClick={() => setShowAllTalks(value => !value)}>{showAllTalks ? "Voir moins" : `Voir plus (+${talkItems.length - 6})`}</button>}</div><span>Google I/O Extended · DevFest · WTM · GDG</span></motion.div>
       </section>
 
       <section id="distinctions" className="distinctions-section">

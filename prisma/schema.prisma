@@ -61,3 +61,17 @@ model RateLimitBucket {
 
   @@index([expiresAt])
 }
+
+model ContactVerification {
+  id          String   @id
+  email       String
+  codeHash    String
+  payloadHash String
+  attempts    Int      @default(0)
+  expiresAt   DateTime @db.Timestamptz(3)
+  usedAt      DateTime? @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@index([email, createdAt])
+}
