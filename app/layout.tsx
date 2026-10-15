@@ -3,8 +3,23 @@ import { cookies, headers } from "next/headers";
 import "./styles.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.charlamasy.site"),
   title: "M.Charla.R. | Développeuse Full-Stack & Cloud",
   description: "Portfolio de MASY Charla Rosalie, développeuse full-stack, data et cloud à Antananarivo.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "M.Charla.R.",
+    title: "M.Charla.R. | Développeuse Full-Stack & Cloud",
+    description: "Portfolio de MASY Charla Rosalie, développeuse full-stack, data et cloud à Antananarivo.",
+    locale: "fr_FR",
+  },
+  twitter: {
+    card: "summary",
+    title: "M.Charla.R. | Développeuse Full-Stack & Cloud",
+    description: "Portfolio de MASY Charla Rosalie, développeuse full-stack, data et cloud à Antananarivo.",
+  },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
