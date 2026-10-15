@@ -5,7 +5,12 @@ const path = require("node:path");
 const clientTypesPath = path.join(__dirname, "..", "node_modules", ".prisma", "client", "index.d.ts");
 const clientTypes = existsSync(clientTypesPath) ? readFileSync(clientTypesPath, "utf8") : "";
 
-if (clientTypes.includes("get rateLimitBucket()") && clientTypes.includes("get contactVerification()")) {
+if (
+  clientTypes.includes("get rateLimitBucket()") &&
+  clientTypes.includes("get contactVerification()") &&
+  clientTypes.includes('readonly titleEn: FieldRef<"Project"') &&
+  clientTypes.includes('readonly descriptionEn: FieldRef<"PortfolioEntry"')
+) {
   console.log("Prisma Client is up to date.");
   process.exit(0);
 }
