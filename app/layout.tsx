@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     title: "M.Charla.R. | Développeuse Full-Stack & Cloud",
     description: "Portfolio de MASY Charla Rosalie, développeuse full-stack, data et cloud à Antananarivo.",
     locale: "fr_FR",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "M.Charla.R. — Je construis des systèmes qui servent." }],
+    images: [{ url: "/portfolio-share.png", width: 1885, height: 972, alt: "Capture du portfolio M.Charla.R. — Je construis des systèmes qui servent." }],
   },
   twitter: {
     card: "summary_large_image",
     title: "M.Charla.R. | Développeuse Full-Stack & Cloud",
     description: "Portfolio de MASY Charla Rosalie, développeuse full-stack, data et cloud à Antananarivo.",
-    images: ["/opengraph-image"],
+    images: ["/portfolio-share.png"],
   },
 };
 
