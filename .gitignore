@@ -7,3 +7,5 @@ node_modules
 prisma/dev.db
 .tmp-ui-ux-skill
 .neon
+cv/generated/
+.cv-preview/

@@ -206,6 +206,8 @@ function BackToTop({ language }: { language: Language }) {
 export default function Home({ initialLanguage, initialProjects, initialEntries }: HomeProps) {
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const t = (key: keyof typeof translations.fr) => translations[language][key];
+  const cvFileName = `MASY-Charla-Rosalie-CV-${language}.pdf`;
+  const cvHref = `/${cvFileName}`;
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [tickerPaused, setTickerPaused] = useState(false);
@@ -282,13 +284,13 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
       <header className={`topbar${heroNavVisible ? "" : " is-away"}`} aria-hidden={!heroNavVisible} inert={!heroNavVisible}>
         <a className="brand" href="#top" aria-label={t("brandHome")}>M<span>.</span>Charla<span>.</span>R.</a>
         <nav className="desktop-nav" aria-label={language === "fr" ? "Navigation principale" : "Main navigation"}><a href="#parcours">{t("navJourney")}</a><a href="#projets">{t("navProjects")}</a><a href="#communaute">{t("navCommunity")}</a><a href="#distinctions">{t("navMarkers")}</a></nav>
-        <div className="topbar-actions"><div className="language-switch" role="group" aria-label={t("language")}><button type="button" aria-pressed={language === "fr"} onClick={() => changeLanguage("fr")}>FR</button><span aria-hidden="true">/</span><button type="button" aria-pressed={language === "en"} onClick={() => changeLanguage("en")}>EN</button></div><button className="contact-link" type="button" onClick={() => setContactOpen(true)}>{t("contact")} <ArrowUpRight size={16} /></button></div>
+        <div className="topbar-actions"><div className="language-switch" role="group" aria-label={t("language")}><button type="button" aria-pressed={language === "fr"} onClick={() => changeLanguage("fr")}>FR</button><span aria-hidden="true">/</span><button type="button" aria-pressed={language === "en"} onClick={() => changeLanguage("en")}>EN</button></div><button className="contact-link" type="button" onClick={() => setContactOpen(true)}>{t("contact")} <ArrowUpRight size={16} /></button><a className="header-cv-link" href={cvHref} download={cvFileName} aria-label={t("downloadCv")}>CV <Download size={15} aria-hidden="true" /></a></div>
         <button className="menu-button" aria-label={language === "fr" ? "Ouvrir le menu" : "Open menu"} onClick={() => setMenuOpen(true)}><Menu /></button>
       </header>
 
       <AnimatePresence>{menuOpen && <motion.div className="mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <button aria-label={t("close")} onClick={() => setMenuOpen(false)}><X /></button>
-        <a onClick={() => setMenuOpen(false)} href="#parcours">{t("navJourney")}</a><a onClick={() => setMenuOpen(false)} href="#projets">{t("navProjects")}</a><a onClick={() => setMenuOpen(false)} href="#communaute">{t("navCommunity")}</a><a onClick={() => setMenuOpen(false)} href="#distinctions">{t("navMarkers")}</a><div className="mobile-menu-bottom"><div className="language-switch language-switch-mobile" role="group" aria-label={t("language")}><button type="button" aria-pressed={language === "fr"} onClick={() => changeLanguage("fr")}>FR</button><span aria-hidden="true">/</span><button type="button" aria-pressed={language === "en"} onClick={() => changeLanguage("en")}>EN</button></div><button className="mobile-contact-link" type="button" onClick={() => { setMenuOpen(false); setContactOpen(true); }}>{t("mobileMessage")} <ArrowUpRight size={20} /></button></div>
+        <a onClick={() => setMenuOpen(false)} href="#parcours">{t("navJourney")}</a><a onClick={() => setMenuOpen(false)} href="#projets">{t("navProjects")}</a><a onClick={() => setMenuOpen(false)} href="#communaute">{t("navCommunity")}</a><a onClick={() => setMenuOpen(false)} href="#distinctions">{t("navMarkers")}</a><div className="mobile-menu-bottom"><div className="language-switch language-switch-mobile" role="group" aria-label={t("language")}><button type="button" aria-pressed={language === "fr"} onClick={() => changeLanguage("fr")}>FR</button><span aria-hidden="true">/</span><button type="button" aria-pressed={language === "en"} onClick={() => changeLanguage("en")}>EN</button></div><button className="mobile-contact-link" type="button" onClick={() => { setMenuOpen(false); setContactOpen(true); }}>{t("mobileMessage")} <ArrowUpRight size={20} /></button><a className="mobile-cv-link" href={cvHref} download={cvFileName} aria-label={t("downloadCv")}>CV <Download size={18} aria-hidden="true" /></a></div>
       </motion.div>}</AnimatePresence>
 
       <section id="top" className="hero" ref={heroRef}>
@@ -307,7 +309,7 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
       </section>
 
       <section id="parcours" className="section career-section">
-        <motion.div className="section-intro" {...reveal}><p className="eyebrow section-label">{t("journeyEyebrow")}</p><h2>{t("journeyTitle")} <i>{t("people")}</i></h2><div className="intro-support"><p className="intro-aside">{t("journeyAside")}</p><a className="cv-download" href="/MASY-Charla-Rosalie-CV-Fullstack.pdf" download="MASY-Charla-Rosalie-CV-Fullstack.pdf"><Download size={16} aria-hidden="true" /><span>{t("downloadCv")}</span></a></div></motion.div>
+        <motion.div className="section-intro" {...reveal}><p className="eyebrow section-label">{t("journeyEyebrow")}</p><h2>{t("journeyTitle")} <i>{t("people")}</i></h2><div className="intro-support"><p className="intro-aside">{t("journeyAside")}</p><a className="cv-download" href={cvHref} download={cvFileName}><Download size={16} aria-hidden="true" /><span>{t("downloadCv")}</span></a></div></motion.div>
         <div className="work-list">{careerItems.map((item, index) => <motion.article className="work-item" data-cursor="work" key={`${item.number}-${item.role}`} {...reveal} transition={{ duration: .65, delay: index * .08 }}>
           <span className="work-number">{item.number}</span><div><p className="work-meta">{item.period} · {item.place}</p><h3>{item.role}</h3><p className="work-text">{item.text}</p></div><ul>{item.facts.map(fact => <li key={fact}>{fact}</li>)}</ul>
         </motion.article>)}</div>

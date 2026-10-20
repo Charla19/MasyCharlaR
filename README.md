@@ -49,3 +49,7 @@ Docker sert au développement local uniquement : Vercel héberge l’application
 - `app/admin` — authentification par cookie HTTP-only et gestion de tous les types de contenu.
 - `prisma/schema.prisma` — modèles projets et contenus éditoriaux.
 - `lib/auth.ts` — sessions JWT signées, sans mot de passe en clair.
+
+## CV
+
+Le modèle de mise en page est dans `cv/template.docx`. Les textes français et anglais sont maintenus dans `scripts/build-cv.py`. Après une modification, générez les fichiers Word puis les PDF avec `python scripts/build-cv.py` et `python scripts/render-cv.py` (dépendances : `python-docx`, `reportlab` et polices Arial sous Windows). Les PDF publiés sont dans `public/` ; l’ancien lien vers le CV français reste fonctionnel.
