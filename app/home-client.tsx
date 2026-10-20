@@ -313,7 +313,7 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
         <div className="work-list">{careerItems.map((item, index) => <motion.article className="work-item" data-cursor="work" key={`${item.number}-${item.role}`} {...reveal} transition={{ duration: .65, delay: index * .08 }}>
           <span className="work-number">{item.number}</span><div><p className="work-meta">{item.period} · {item.place}</p><h3>{item.role}</h3><p className="work-text">{item.text}</p></div><ul>{item.facts.map(fact => <li key={fact}>{fact}</li>)}</ul>
         </motion.article>)}</div>
-        <div className="education-ribbon" data-cursor="education"><span>{t("training")}</span><p>{educationItems.map(item => <span className="education-item" key={item.title}>{item.title} <b>{item.organization} · {item.period}</b></span>)}</p><span>{t("certifiedCloud")}</span></div>
+        {educationItems.length > 0 && <div className="education-ribbon" data-cursor="education"><div className="education-heading"><h3>{t("training")}</h3><span>{t("certifiedCloud")}</span></div><div className="education-list">{educationItems.map(item => <div className="education-item" key={item.title}><strong>{item.title}</strong><span>{item.organization}{item.period && <> · {item.period}</>}</span></div>)}</div></div>}
       </section>
 
       <section id="projets" className={`projects-story${reduceMotion ? " reduce-motion" : ""}`} ref={railRef}>
