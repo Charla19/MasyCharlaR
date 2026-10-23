@@ -62,6 +62,7 @@ body.dialog-open{overflow:hidden}.contact-backdrop{position:fixed;inset:0;z-inde
 
 @media(min-width:701px){.desktop-nav{align-items:center;gap:clamp(8px,1.4vw,22px);font-size:11px}.desktop-nav a{display:inline-flex;min-height:44px;padding:0 9px;align-items:center;justify-content:center}.contact-link{min-height:44px;padding:0 9px}}
 footer div a{display:grid;width:44px;height:44px;flex:0 0 44px;place-items:center;line-height:0;border:0;transition:color .2s}footer div a svg{display:block;pointer-events:none}footer div a:hover{color:var(--acid)}footer div a:focus-visible,.desktop-nav a:focus-visible,.contact-link:focus-visible{outline:1px solid var(--acid);outline-offset:2px}
+.sponsor-button{display:block;flex:0 0 114px;width:114px;height:32px;margin-left:4px;border:0;border-radius:6px;color-scheme:dark}
 @media(max-width:900px){.hero-object{right:-3vw;width:42vw;opacity:.82}.object-caption{right:2%;bottom:10%}}
 @media(max-width:700px){.hero{min-height:92svh;padding-top:95px;padding-bottom:27px}.hero h1{margin:36px 0 26px}.hero-object{right:-27%;top:18%;width:70vw;height:55%;opacity:.3;pointer-events:none}.hero-object .object-caption{display:none}.cube-front strong{font-size:34px}}
 @media(prefers-reduced-motion:reduce){.hero-object-float{animation:none}.hero-object:hover .hero-cube{filter:none}.cursor-orbit:before{filter:none;opacity:.25}}

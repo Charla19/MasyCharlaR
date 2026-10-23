@@ -361,7 +361,7 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
         <motion.p className="human-note" {...reveal}>{t("humanNote")}</motion.p>
       </section>
 
-      <footer><p>{t("footerPrompt")}</p><button className="footer-contact" type="button" onClick={() => setContactOpen(true)}>masycharlar@gmail.com <ArrowUpRight size={18} /></button><div><a aria-label={t("linkedin")} href="https://www.linkedin.com/in/charla-masy-r/" target="_blank" rel="noreferrer"><Linkedin size={18} /></a><a aria-label="GitHub" href="https://github.com/Charla19" target="_blank" rel="noreferrer"><Github size={18} /></a><span>© {new Date().getFullYear()} M.Charla.R. · Antananarivo</span></div></footer>
+      <footer><p>{t("footerPrompt")}</p><button className="footer-contact" type="button" onClick={() => setContactOpen(true)}>masycharlar@gmail.com <ArrowUpRight size={18} /></button><div><a aria-label={t("linkedin")} href="https://www.linkedin.com/in/charla-masy-r/" target="_blank" rel="noreferrer"><Linkedin size={18} /></a><a aria-label="GitHub" href="https://github.com/Charla19" target="_blank" rel="noreferrer"><Github size={18} /></a><iframe className="sponsor-button" src="https://github.com/sponsors/Charla19/button" title="Sponsor Charla19" width="114" height="32" loading="lazy" /><span>© {new Date().getFullYear()} M.Charla.R. · Antananarivo</span></div></footer>
       <BackToTop language={language} />
       <ContactDialog open={contactOpen} onClose={() => setContactOpen(false)} language={language} />
     </main>
