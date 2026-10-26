@@ -321,12 +321,17 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
         <div className="projects-sticky">
           <div className="horizontal-intro"><p className="eyebrow section-label">{t("projectsEyebrow")}</p><h2>{t("projectTitle")}<br /><i>{t("projectItalic")}</i></h2><p>{t("projectAside")}</p></div>
           <motion.div className="project-rail" ref={trackRef} style={wide && !reduceMotion ? { x: railX } : undefined}>
-            {projects.map((project, index) => <article className={`project-card card-${index % 4}`} data-cursor="project" key={project.title}>
-              <span className="project-index">{String(index + 1).padStart(2, "0")} <i>/</i> {project.stack}</span>
-              <div className="project-art" aria-hidden="true"><span>{String(index + 1).padStart(2, "0")}</span><i /><b /></div>
-              <div className="project-copy"><h3>{project.title}</h3><p>{project.summary}</p>{project.outcome && <strong>{project.outcome}</strong>}</div>
-              {project.href && <a className="project-visit" href={project.href} target="_blank" rel="noreferrer" aria-label={language === "fr" ? `Voir le projet ${project.title}` : `Open project ${project.title}`}>{language === "fr" ? "Visiter" : "Visit"}</a>}
-            </article>)}
+            {projects.map((project, index) => {
+              const className = `project-card card-${index % 4}`;
+              const content = <>
+                <span className="project-index">{String(index + 1).padStart(2, "0")} <i>/</i> {project.stack}</span>
+                <div className="project-art" aria-hidden="true"><span>{String(index + 1).padStart(2, "0")}</span><i /><b /></div>
+                <div className="project-copy"><h3>{project.title}</h3><p>{project.summary}</p>{project.outcome && <strong>{project.outcome}</strong>}</div>
+              </>;
+              return project.href
+                ? <a className={className} href={project.href} target="_blank" rel="noreferrer" aria-label={language === "fr" ? `Voir le projet ${project.title} dans un nouvel onglet` : `Open project ${project.title} in a new tab`} key={project.title}>{content}</a>
+                : <article className={className} data-cursor="project" key={project.title}>{content}</article>;
+            })}
           </motion.div>
           <div className="rail-caption"><span>{t("horizontalScroll")}</span><span>{t("swipeScroll")}</span></div>
         </div>

@@ -113,9 +113,10 @@ footer div a{display:grid;width:44px;height:44px;flex:0 0 44px;place-items:cente
 .community-section{background:#252329}
 footer{background:#15131a}
 .topbar-actions .contact-link:after{content:"";width:11px;height:2px;background:var(--acid);transition:width .25s ease}.topbar-actions .contact-link:hover:after{width:21px}
-.project-visit{position:absolute;top:22px;right:24px;z-index:3;display:inline-flex;align-items:center;justify-content:center;min-width:72px;min-height:44px;padding:8px 0;border-bottom:1px solid currentColor;font:700 10px var(--mono);text-transform:uppercase;letter-spacing:.08em;transition:padding-right .25s,border-color .25s}.project-visit:hover{padding-right:12px;border-color:var(--plum)}.project-visit:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+a.project-card{cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}a.project-card:hover{transform:translateY(-5px);box-shadow:0 18px 34px rgba(23,20,28,.18)}a.project-card:focus-visible{outline:3px solid currentColor;outline-offset:-7px}
 .community-card{grid-template-columns:34px minmax(0,1fr)}.distinctions-list article{grid-template-columns:55px minmax(0,1fr)}
 @keyframes aurora-drift-one{to{transform:translate3d(-9%,7%,0) rotate(17deg)}}
 @keyframes aurora-drift-two{to{transform:translate3d(8%,-7%,0) rotate(-14deg)}}
 @media(max-width:700px){.hero-atmosphere span:first-child{left:36%;width:55%;opacity:.7}.hero-atmosphere span:nth-child(2){right:-29%;width:58%;opacity:.6}.hero-atmosphere span:last-child{right:-18%;width:70%;opacity:.55}}
 @media(prefers-reduced-motion:reduce){.hero-atmosphere span{animation:none;will-change:auto}}
+@media(prefers-reduced-motion:reduce){a.project-card{transition:none}a.project-card:hover{transform:none}}
