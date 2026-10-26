@@ -114,6 +114,8 @@ footer div a{display:grid;width:44px;height:44px;flex:0 0 44px;place-items:cente
 footer{background:#15131a}
 .topbar-actions .contact-link:after{content:"";width:11px;height:2px;background:var(--acid);transition:width .25s ease}.topbar-actions .contact-link:hover:after{width:21px}
 a.project-card{cursor:pointer;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s ease}a.project-card:hover{transform:translateY(-5px);box-shadow:0 18px 34px rgba(23,20,28,.18)}a.project-card:focus-visible{outline:3px solid currentColor;outline-offset:-7px}
+.project-visit{position:absolute;top:27px;right:27px;z-index:2;border-bottom:1px solid currentColor;padding-bottom:4px;font:500 11px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.04em}
+@media(max-width:700px){.project-visit{top:22px;right:22px}}
 .community-card{grid-template-columns:34px minmax(0,1fr)}.distinctions-list article{grid-template-columns:55px minmax(0,1fr)}
 @keyframes aurora-drift-one{to{transform:translate3d(-9%,7%,0) rotate(17deg)}}
 @keyframes aurora-drift-two{to{transform:translate3d(8%,-7%,0) rotate(-14deg)}}

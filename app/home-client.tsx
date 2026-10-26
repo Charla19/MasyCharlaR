@@ -325,6 +325,7 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
               const className = `project-card card-${index % 4}`;
               const content = <>
                 <span className="project-index">{String(index + 1).padStart(2, "0")} <i>/</i> {project.stack}</span>
+                {project.href && <span className="project-visit" aria-hidden="true">{language === "fr" ? "Visiter" : "Visit"}</span>}
                 <div className="project-art" aria-hidden="true"><span>{String(index + 1).padStart(2, "0")}</span><i /><b /></div>
                 <div className="project-copy"><h3>{project.title}</h3><p>{project.summary}</p>{project.outcome && <strong>{project.outcome}</strong>}</div>
               </>;
