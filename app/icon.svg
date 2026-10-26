@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <rect width="48" height="48" rx="11" fill="#111311" />
-  <text x="6" y="35" fill="#e9e9e1" font-family="Manrope, Arial, sans-serif" font-size="33" font-weight="800" letter-spacing="-2.5">C</text>
-  <circle cx="35" cy="32" r="2.5" fill="#d7f836" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>M.Charla.R.</title>
+  <path d="M32 2 62 32 32 62 2 32Z" fill="#4b2943"/>
+  <path d="m18 21 14-8 14 8v22l-14 8-14-8Z" fill="#111311" stroke="#e9e9e1" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m18 21 14 8 14-8M32 29v22" fill="none" stroke="#e9e9e1" stroke-width="3" stroke-linejoin="round"/>
+  <path d="m32 13 14 8v9" fill="none" stroke="#d7f836" stroke-width="4" stroke-linecap="square"/>
 </svg>
