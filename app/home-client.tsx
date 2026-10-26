@@ -295,6 +295,7 @@ export default function Home({ initialLanguage, initialProjects, initialEntries 
 
       <section id="top" className="hero" ref={heroRef}>
         <div className="hero-frame">
+        <div className="hero-atmosphere" aria-hidden="true"><span /><span /><span /></div>
         <div className="grain" aria-hidden="true" />
         <HeroObject progress={heroProgress} reduceMotion={Boolean(reduceMotion)} />
         <motion.p className="eyebrow" {...reveal}>Antananarivo, Madagascar <span className="live-dot" /> Full-stack · Cloud · {language === "fr" ? "Communautés" : "Community"}</motion.p>
